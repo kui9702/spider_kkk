@@ -2,25 +2,43 @@ import re
 import requests
 import xlsxwriter
 import time
+import down_img
+import os
+
+global j
+j = 0
 
 def GetxxintoExcel(html):
-    global count
+    global count,j
     a = re.findall(r'"raw_title":"(.*?)"', html)
     b = re.findall(r'"view_price":"(.*?)"', html)
     c = re.findall(r'"item_loc":"(.*?)"', html)
     d = re.findall(r'"view_sales":"(.*?)"', html)
+    e = re.findall(r'"detail_url":"(.*?)"', html)
+    f = re.findall(r'"pic_url":"(.*?)"', html)
     x = []
     for i in range(len(a)):
+        e[i] = 'https:'+ e[i]
+        f[i] = 'https:' + f[i]
+        e[i] = e[i].encode("latin-1").decode("unicode_escape")
         try:
-            x.append((a[i], b[i], c[i], d[i]))
+            x.append((a[i], b[i], c[i], d[i], e[i], f[i]))
         except IndexError:
             break
     i = 0
     for i in range(len(x)):
+        worksheet.set_row(j, 200)
         worksheet.write(count + i + 1, 0, x[i][0])
         worksheet.write(count + i + 1, 1, x[i][1])
         worksheet.write(count + i + 1, 2, x[i][2])
         worksheet.write(count + i + 1, 3, x[i][3])
+        worksheet.write(count + i + 1, 4, x[i][4])
+        worksheet.write(count + i + 1, 5, x[i][5])
+        down_img.down_img(x[i][5],count + i + 1)
+        path = os.path.join(r'img', str(count + i + 1) + '.jpg')
+        print(path)
+        worksheet.insert_image(count + i + 1, 6, path)
+        j = j + 1
     count = count + len(x)
     return print("已完成")
 
@@ -64,13 +82,20 @@ if __name__ == "__main__":
     worksheet.set_column('B:B', 20)
     worksheet.set_column('C:C', 20)
     worksheet.set_column('D:D', 20)
+    worksheet.set_column('E:E', 20)
+    worksheet.set_column('F:F', 20)
+    worksheet.set_column('G:G', 30)
     worksheet.write('A1', '名称')
     worksheet.write('B1', '价格')
     worksheet.write('C1', '地区')
     worksheet.write('D1', '付款人数')
+    worksheet.write('E1', '链接')
+    worksheet.write('F1', '图片地址')
+    worksheet.write('G1', '图片')
     xx = []
     for url in urls:
         html = GetHtml(url)
+        print(type(html))
         s = GetxxintoExcel(html.text)
         time.sleep(5)
     workbook.close()
