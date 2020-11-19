@@ -2,8 +2,11 @@ import requests
 from time import sleep
 from PIL import Image
 import os
+import tool
 
 def down_img(url,j):
+    tool.exist_file(r'img')
+    tool.exist_file(r'ori_img')
     try:
         pic = requests.get(url,timeout=20)
         sleep(2)
